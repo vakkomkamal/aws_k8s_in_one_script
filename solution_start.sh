@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+
+
 #install kubectl
 
 curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/amd64/kubectl
@@ -60,8 +63,7 @@ eksctl create cluster \
 --ssh-public-key ~/.ssh/id_rsa.pub \
 --managed
 
-#kubectl create deployment challenge --image=828546120056.dkr.ecr.us-west-2.amazonaws.com/challenge:latest
-#kubectl create service LoadBalancer challenge --tcp=80:80
+
 
 
 aws ecr create-repository \
@@ -69,12 +71,12 @@ aws ecr create-repository \
 echo "Enter the registryId from above: "
 read Input
 aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 828546120056.dkr.ecr.us-west-2.amazonaws.com
-
+sudo chmod 777 /var/run/docker.sock
 
 cd worker
 docker build -t $Input.dkr.ecr.us-west-2.amazonaws.com/challenge:latest .
 docker push $Input.dkr.ecr.us-west-2.amazonaws.com/challenge:latest
-
+cd
 
 sudo chmod 777 /var/run/docker.sock
 
@@ -125,6 +127,6 @@ EOF
 
 kubectl apply -f deployment.yaml
 kubectl get svc -o wide
-echo "access website using external address and port 8080"
+echo "access website using external address and port 8080 after 3 minutes"
 
 
