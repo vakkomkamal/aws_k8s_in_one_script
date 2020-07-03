@@ -66,57 +66,65 @@ eksctl create cluster \
 
 aws ecr create-repository \
     --repository-name challenge
-registry_id = "Enter the registryId from above : "
+echo "Enter the registryId from above: "
+read Input
 aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 828546120056.dkr.ecr.us-west-2.amazonaws.com
 
 
 cd worker
-docker build -t $registry_id.dkr.ecr.us-west-2.amazonaws.com/challenge:latest .
-docker push $registry_id.dkr.ecr.us-west-2.amazonaws.com/challenge:latest
+docker build -t $Input.dkr.ecr.us-west-2.amazonaws.com/challenge:latest .
+docker push $Input.dkr.ecr.us-west-2.amazonaws.com/challenge:latest
 
 
 sudo chmod 777 /var/run/docker.sock
 
 cat <<EOF> deployment.yaml
- apiVersion: v1
- kind: Service
- metadata:
-   name: challenge
-   labels:
+apiVersion: v1
+kind: Service
+metadata:
+  name: challenge
+  labels:
+    app: challenge
+spec:
+  type: LoadBalancer
+  selector:
      app: challenge
- spec:
-   ports:
-     - port: 80
-   selector:
-     app: challenge
-     tier: frontend
-   type: LoadBalancer
+  ports:
+    - nodePort: 31479
+      port: 8080
+      targetPort: 3000
 
- ---
- apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
- kind: Deployment
- metadata:
-   name: challenge
-   labels:
-     app: challenge
- spec:
-   selector:
-     matchLabels:
-       app: challenge
-       tier: frontend
-   strategy:
-     type: Recreate
-   template:
-     metadata:
-       labels:
-         app: challenge
-         tier: frontend
-     spec:
-       containers:
-       - image: $registry_id.dkr.ecr.us-west-2.amazonaws.com/challenge:latest
-         name: challenge
-         ports:
-         - containerPort: 80
-           name: challenge
+
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: challenge
+  labels:
+    app: challenge
+spec:
+  selector:
+    matchLabels:
+      app: challenge
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+     labels:
+        app: challenge
+        tier: frontend
+    spec:
+      containers:
+      - image: $Input.dkr.ecr.us-west-2.amazonaws.com/challenge:latest
+        name: challenge
+        ports:
+        - containerPort: 3000
+          name: challenge
 EOF
+
+kubectl apply -f deployment.yaml
+kubectl get svc -o wide
+echo "access website using external address and port 8080"
+
 
