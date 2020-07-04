@@ -48,10 +48,12 @@ rm -rf awscliv2
 echo "Please create a user with AdministratorAccess permission first and provide the below details"
 aws configure
 
+echo "Enter the name of the EKS cluster and ECR registry you want create: "
+read clustername
 
 
 eksctl create cluster \
---name challenge \
+--name $clustername \
 --version 1.16 \
 --region us-west-2 \
 --nodegroup-name standard-workers \
@@ -67,15 +69,15 @@ eksctl create cluster \
 
 
 aws ecr create-repository \
-    --repository-name challenge
+    --repository-name $clustername
 echo "Enter the registryId from above: "
 read Input
 aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 828546120056.dkr.ecr.us-west-2.amazonaws.com
 sudo chmod 777 /var/run/docker.sock
 
 cd worker
-docker build -t $Input.dkr.ecr.us-west-2.amazonaws.com/challenge:latest .
-docker push $Input.dkr.ecr.us-west-2.amazonaws.com/challenge:latest
+docker build -t $Input.dkr.ecr.us-west-2.amazonaws.com/$clustername:latest .
+docker push $Input.dkr.ecr.us-west-2.amazonaws.com/$clustername:latest
 cd
 
 sudo chmod 777 /var/run/docker.sock
@@ -84,13 +86,13 @@ cat <<EOF> deployment.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: challenge
+  name: $clustername
   labels:
-    app: challenge
+    app: $clustername
 spec:
   type: LoadBalancer
   selector:
-     app: challenge
+     app: $clustername
   ports:
     - nodePort: 31479
       port: 8080
@@ -101,28 +103,28 @@ spec:
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
-  name: challenge
+  name: $clustername
   labels:
-    app: challenge
+    app: $clustername
 spec:
   selector:
     matchLabels:
-      app: challenge
+      app: $clustername
       tier: frontend
   strategy:
     type: Recreate
   template:
     metadata:
      labels:
-        app: challenge
+        app: $clustername
         tier: frontend
     spec:
       containers:
-      - image: $Input.dkr.ecr.us-west-2.amazonaws.com/challenge:latest
-        name: challenge
+      - image: $Input.dkr.ecr.us-west-2.amazonaws.com/$clustername:latest
+        name: $clustername
         ports:
         - containerPort: 3000
-          name: challenge
+          name: $clustername
 EOF
 
 kubectl apply -f deployment.yaml
