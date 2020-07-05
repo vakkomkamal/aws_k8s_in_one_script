@@ -71,13 +71,13 @@ eksctl create cluster \
 aws ecr create-repository \
     --repository-name $clustername
 echo "Enter the registryId from above: "
-read Input
-aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 828546120056.dkr.ecr.us-west-2.amazonaws.com
+read registryID
+aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $registryID.dkr.ecr.us-west-2.amazonaws.com
 sudo chmod 777 /var/run/docker.sock
 
 cd worker
-docker build -t $Input.dkr.ecr.us-west-2.amazonaws.com/$clustername:latest .
-docker push $Input.dkr.ecr.us-west-2.amazonaws.com/$clustername:latest
+docker build -t $registryID.dkr.ecr.us-west-2.amazonaws.com/$clustername:latest .
+docker push $registryID.dkr.ecr.us-west-2.amazonaws.com/$clustername:latest
 cd
 
 sudo chmod 777 /var/run/docker.sock
@@ -120,7 +120,7 @@ spec:
         tier: frontend
     spec:
       containers:
-      - image: $Input.dkr.ecr.us-west-2.amazonaws.com/$clustername:latest
+      - image: $registryID.dkr.ecr.us-west-2.amazonaws.com/$clustername:latest
         name: $clustername
         ports:
         - containerPort: 3000
