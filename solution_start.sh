@@ -78,7 +78,7 @@ sudo chmod 777 /var/run/docker.sock
 cd worker
 docker build -t $registryID.dkr.ecr.us-west-2.amazonaws.com/$clustername:latest .
 docker push $registryID.dkr.ecr.us-west-2.amazonaws.com/$clustername:latest
-cd
+cd ..
 
 sudo chmod 777 /var/run/docker.sock
 
