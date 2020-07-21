@@ -10,13 +10,13 @@
 5. #You will be able to do kubectl through the system which you have run the script. 
 
 
-a. #This will work only from a linux machine, if you are using windows, then please install virtualbox and 
+1. #This will work only from a linux machine, if you are using windows, then please install virtualbox and 
   install a Ubuntu linux VM in it.
-b. #Please also make sure that the docker engine is installed in your linux local machine
-c. #Run "solution_start.sh" using the command "bash solution_start.sh"
-d. #You can do this with a aws free tier account, login and go to IAM and create a user with "AdministerAccess" privilege
+2. #Please also make sure that the docker engine is installed in your linux local machine
+3. #Run "solution_start.sh" using the command "bash solution_start.sh"
+4. #You can do this with a aws free tier account, login and go to IAM and create a user with "AdministerAccess" privilege
  and obtain AWS Access Key ID and AWS Secret Access Key
-e. #you need to copy paste registryID upon docker registry creation. Will prompt for registryID< just need to copy from 
+5. #you need to copy paste registryID upon docker registry creation. Will prompt for registryID< just need to copy from 
  above line, no need to go to console.
 
 
